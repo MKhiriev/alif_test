@@ -36,30 +36,6 @@ notification_service = UserNotificationService(sms_notifier, email_notifier, use
 booking_service = BookingService(booking_repo, notification_service)
 
 
-def send_booking_info_email(user_email, booking):
-    """
-    Sends email with booking info.
-
-    :param user_email: email address of user
-    :param booking: Booking object
-    :return: None
-    """
-    print(f"Sending email to {user_email}..."
-          f"{booking}")
-
-
-def send_booking_info_sms(user_telephone, booking):
-    """
-    Sends sms with created booking info.
-
-    :param user_telephone: telephone number of user
-    :param booking: Booking object
-    :return: None
-    """
-    print(f"Sending sms to {user_telephone}..."
-          f"{booking}")
-
-
 def print_booking_info(booking):
     """
     Prints booking info to the user.
@@ -79,18 +55,24 @@ def print_booking_info(booking):
     print(f"Booking details: [{room_id} | {date} {time_start}-{time_end} | {user_name}]")
 
 
-if __name__ == '__main__':
-    database = 'example.db'
-    prepare_db(database)
-
+def get_user_input():
+    global room_number, user_id, unix_booking_time_start, unix_booking_time_end
     room_number = input('Choose desired room number: ')
     booking_date = input('Write desired date in given format [DD.MM.YYYY]: ')
     booking_time_start = input('Starting time in given format [HH:MM]: ')
     booking_time_end = input('Ending time in given format [HH:MM]: ')
     user_id = input('Choose who is going to book room: ')
-
     unix_booking_time_start = to_unix(booking_date, booking_time_start)
     unix_booking_time_end = to_unix(booking_date, booking_time_end)
+
+    return room_number, user_id, unix_booking_time_start, unix_booking_time_end
+
+
+if __name__ == '__main__':
+    database = 'example.db'
+    prepare_db(database)
+
+    [user_id, room_number, unix_booking_time_start, unix_booking_time_end] = get_user_input()
 
     print('Checking if room is available...')
 
