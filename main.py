@@ -10,17 +10,41 @@
 Результаты задачи должны быть размещены в вашей учетной записи Github, отправьте нам только ссылку.
 Мы не принимаем результаты задач в .zip/.rar и т. д.
 """
+import sqlite3
+
+
+def get_booking_info(room_id, booking_time):
+    """
+    SELECTs from Database room bookings based on room and given booking time range.
+
+    :param room_id: id of room which is going to be booked
+    :param booking_time: list with two elements [datetime_start, datetime_end]
+    :return: list of found bookings
+    """
+    pass
 
 
 def check_if_available(room_id, booking_time):
     """
     Checks room availability by booking time.
+    If available, returns True and empty list of overlapping bookings (which means it is available).
+    If not available, returns False and list of overlapping bookings.
 
     :param room_id: id of room which is going to be booked
     :param booking_time: list with two elements [datetime_start, datetime_end]
-    :return: list with two elements - [if_available, overlapping_bookings]
+    :return: If available, returns True and empty list of overlapping bookings (which means it is available).
+             If not available, returns False and list of overlapping bookings.
     """
-    pass
+    room_is_available = True
+    room_is_not_available = False
+
+    no_overlapping_bookings = []
+    overlapping_bookings = get_booking_info(room_id, booking_time)
+
+    if not overlapping_bookings:
+        return [room_is_available, no_overlapping_bookings]
+    else:
+        return [room_is_not_available, overlapping_bookings]
 
 
 def add_room_booking(user_id, room_id, booking_time):
@@ -31,6 +55,49 @@ def add_room_booking(user_id, room_id, booking_time):
     :param room_id: id of room which is going to be booked
     :param booking_time: list with two elements [datetime_start, datetime_end]
     :return: booking id of added booking
+    """
+    [unix_booking_start_time, unix_booking_end_time] = booking_time
+    conn = sqlite3.connect('example.db')
+    cursor = conn.cursor()
+
+    add_booking_query = (f"INSERT INTO bookings (user_id, room_id, unix_datetime_start, unix_datetime_end) "
+                         f"VALUES ({user_id}, {room_id}, {unix_booking_start_time}, {unix_booking_end_time}) )")
+
+    cursor.execute(add_booking_query)
+    added_booking_id = cursor.lastrowid
+    conn.close()
+
+    return added_booking_id
+
+
+def get_user_info(user_id):
+    """
+    Get user info.
+
+    :param user_id: id of user who is going to book
+    :return: list of user info [user_id, name, email, telephone]
+    """
+    pass
+
+
+def send_booking_info_email(user_email, booking_info):
+    """
+    Sends email with created booking info.
+
+    :param user_email: email address of user
+    :param booking_info: list of booking info [user_id, room_id, unix_datetime_start, unix_datetime_end]
+    :return: None
+    """
+    pass
+
+
+def send_booking_info_sms(user_telephone, booking_info):
+    """
+    Sends sms with created booking info.
+
+    :param user_telephone: telephone number of user
+    :param booking_info: list of booking info [user_id, room_id, unix_datetime_start, unix_datetime_end]
+    :return: None
     """
     pass
 
@@ -43,6 +110,21 @@ def notify_user(user_id, booking_info):
     :param booking_info: booking info which is going to be printed
     :return: None
     """
+    user_info = get_user_info(user_id)
+    user_email = user_info['email']
+    user_telephone = user_info['telephone']
+
+    send_booking_info_email(user_email, booking_info)
+    send_booking_info_sms(user_telephone, booking_info)
+
+
+def from_unix(unix_datetime):
+    """
+    Converts unix timestamp to datetime tuple.
+
+    :param unix_datetime:
+    :return: datetime tuple {'date': "%d.%m.%Y", 'time': "%H:%M"}
+    """
     pass
 
 
@@ -53,7 +135,16 @@ def print_booking_info(booking):
     :param booking: booking information which is going to be printed
     :return: None
     """
-    pass
+    user_id = booking['user_id']
+    room_id = booking['room_id']
+    user_name = get_user_info(user_id)['name']
+    datetime_start = booking['unix_datetime_start']
+    datetime_end = booking['unix_datetime_end']
+    date = from_unix(datetime_start)['date']
+    time_start = from_unix(datetime_start)['time']
+    time_end = from_unix(datetime_end)['time']
+
+    print(f'Booking details: {room_id} | {date} {time_start}-{time_end} | {user_name}')
 
 
 def book_room(user_id, room_id, booking_time):
