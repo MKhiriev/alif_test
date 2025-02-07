@@ -49,14 +49,14 @@ def insert_data(cursor):
     cursor.execute(insert_booking_data_query)
 
 
-def prepare_db():
+def prepare_db(database):
     """
     Prepares database for booking app.
 
     :return: None
     """
     # 1. establish database connection
-    conn = sqlite3.connect('example.db')
+    conn = sqlite3.connect(database)
     cursor = conn.cursor()
 
     # 2. create tables
@@ -70,13 +70,13 @@ def prepare_db():
     conn.close()
 
 
-def flush_db():
+def flush_db(database):
     """
     Deletes all tables with data from database.
 
     :return: None
     """
-    conn = sqlite3.connect('example.db')
+    conn = sqlite3.connect(database)
 
     conn.execute("DROP TABLE IF EXISTS users")
     conn.execute("DROP TABLE IF EXISTS rooms")
