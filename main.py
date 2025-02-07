@@ -11,9 +11,9 @@
 Мы не принимаем результаты задач в .zip/.rar и т. д.
 """
 import sqlite3
-from datetime import datetime
 
 from database_utils import prepare_db, flush_db
+from datetime_utils import to_unix, from_unix
 from models.booking import Booking
 from models.user import User
 
@@ -155,31 +155,6 @@ def notify_user(user_id, booking):
 
     send_booking_info_email(user_email, booking)
     send_booking_info_sms(user_telephone, booking)
-
-
-def from_unix(unix_timestamp):
-    """
-    Converts unix timestamp to datetime tuple.
-    Date is presented in DD.MM.YYYY format.
-    Time is presented in HH:MM format.
-
-    :param unix_timestamp: unix timestamp number (integer)
-    :return: datetime tuple {'date': "%d.%m.%Y", 'time': "%H:%M"}
-    """
-    dt = datetime.fromtimestamp(unix_timestamp)
-    return {'date': dt.strftime("%d.%m.%Y"), 'time': dt.strftime("%H:%M")}
-
-
-def to_unix(date_str, time_str):
-    """
-    Converts date and time to unix timestamp.
-
-    :param date_str: Date string presented in DD.MM.YYYY format
-    :param time_str: Time string presented in HH:MM format
-    :return: unix timestamp (integer)
-    """
-    dt = datetime.strptime(f"{date_str} {time_str}", "%d.%m.%Y %H:%M")
-    return int(dt.timestamp())
 
 
 def print_booking_info(booking):
