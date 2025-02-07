@@ -19,4 +19,4 @@ class Booking:
         start_date = get_date(self.unix_datetime_start)
         start_time = get_time(self.unix_datetime_start)
         end_time = get_time(self.unix_datetime_end)
-        return f'Booking details: {self.booking_id} | {self.room_id} | {start_date} {start_time} - {end_time} | {self.user_id}'
+        return f'Booking details: [{self.booking_id} | {self.room_id} | {start_date} {start_time} - {end_time} | {self.user_id}]'
