@@ -21,7 +21,7 @@ class BookingService:
         if available:
             registered_booking = self.booking_repository.add_room_booking(user_id, room_id, booking_time)
             self.user_notification_service.notify_user(user_id, f"Created new booking. Details below: "
-                                                           f"{registered_booking}")
+                                                                f"{registered_booking}")
             return [booking_success, registered_booking]
         if not available:
             return [booking_fail, overlapping_bookings]
