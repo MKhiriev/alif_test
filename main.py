@@ -19,7 +19,6 @@ from services.user_notification_service import UserNotificationService
 
 from services.user_service import UserService
 from utils.database_utils import prepare_db, flush_db
-from utils.datetime_utils import to_unix, from_unix
 from utils.notifiers.email_notifier import EmailNotifier
 from utils.notifiers.sms_notifier import SmsNotifier
 from views.console_view import ConsoleView
