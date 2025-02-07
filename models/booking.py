@@ -1,4 +1,4 @@
-from datetime_utils import get_date, get_time
+from utils.datetime_utils import get_date, get_time
 
 
 class Booking:

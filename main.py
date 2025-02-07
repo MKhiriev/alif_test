@@ -12,10 +12,10 @@
 """
 import sqlite3
 
-from database_utils import prepare_db, flush_db
-from datetime_utils import to_unix, from_unix
 from models.booking import Booking
 from models.user import User
+from utils.database_utils import prepare_db, flush_db
+from utils.datetime_utils import to_unix, from_unix
 
 
 # TODO move string 'example.db' from method to single place
@@ -173,7 +173,7 @@ def print_booking_info(booking):
     time_start = from_unix(datetime_start)['time']
     time_end = from_unix(datetime_end)['time']
 
-    print(f'Booking details: {room_id} | {date} {time_start}-{time_end} | {user_name}')
+    print(f"Booking details: [{room_id} | {date} {time_start}-{time_end} | {user_name}]")
 
 
 def book_room(user_id, room_id, booking_time):
