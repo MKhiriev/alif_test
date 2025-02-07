@@ -68,3 +68,18 @@ def prepare_db():
     conn.commit()
     # 5. close database connection
     conn.close()
+
+
+def flush_db():
+    """
+    Deletes all tables with data from database.
+
+    :return: None
+    """
+    conn = sqlite3.connect('example.db')
+
+    conn.execute("DROP TABLE IF EXISTS users")
+    conn.execute("DROP TABLE IF EXISTS rooms")
+    conn.execute("DROP TABLE IF EXISTS bookings")
+
+    conn.close()
