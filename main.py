@@ -12,36 +12,28 @@
 """
 
 from repositories.booking_repository import BookingRepository
+from repositories.room_repository import RoomRepository
 from repositories.user_repository import UserRepository
+from services.booking_service import BookingService
+from services.user_notification_service import UserNotificationService
+
+from services.user_service import UserService
 from utils.database_utils import prepare_db, flush_db
 from utils.datetime_utils import to_unix, from_unix
+from utils.notifiers.email_notifier import EmailNotifier
+from utils.notifiers.sms_notifier import SmsNotifier
 
 database = 'example.db'
 user_repo = UserRepository(database)
 booking_repo = BookingRepository(database)
+room_repo = RoomRepository(database)
 
+sms_notifier = SmsNotifier('Babilon-M')
+email_notifier = EmailNotifier('Gmail.com')
 
-def check_if_available(room_id, booking_time):
-    """
-    Checks room availability by booking time.
-    If available, returns True and empty list of overlapping bookings (which means it is available).
-    If not available, returns False and list of overlapping bookings.
-
-    :param room_id: id of room which is going to be booked
-    :param booking_time: list with two elements [datetime_start, datetime_end]
-    :return: If available, returns True and empty list of overlapping bookings (which means it is available).
-             If not available, returns False and list of overlapping bookings.
-    """
-    room_is_available = True
-    room_is_not_available = False
-
-    no_overlapping_bookings = []
-    overlapping_bookings = booking_repo.get_bookings_by_room_id_and_booking_time(room_id, booking_time)
-
-    if not overlapping_bookings:
-        return [room_is_available, no_overlapping_bookings]
-    else:
-        return [room_is_not_available, overlapping_bookings]
+user_service = UserService(user_repo)
+notification_service = UserNotificationService(sms_notifier, email_notifier, user_service)
+booking_service = BookingService(booking_repo, notification_service)
 
 
 def send_booking_info_email(user_email, booking):
@@ -68,22 +60,6 @@ def send_booking_info_sms(user_telephone, booking):
           f"{booking}")
 
 
-def notify_user(user_id, booking):
-    """
-    Notifies user with info about created booking.
-
-    :param user_id: id of user who is going to book
-    :param booking: Booking object
-    :return: None
-    """
-    user = user_repo.get_user_by_id(user_id)
-    user_email = user.email
-    user_telephone = user.telephone
-
-    send_booking_info_email(user_email, booking)
-    send_booking_info_sms(user_telephone, booking)
-
-
 def print_booking_info(booking):
     """
     Prints booking info to the user.
@@ -103,28 +79,6 @@ def print_booking_info(booking):
     print(f"Booking details: [{room_id} | {date} {time_start}-{time_end} | {user_name}]")
 
 
-def book_room(user_id, room_id, booking_time):
-    """
-    Books a room.
-
-    :param user_id: id of user who is going to book
-    :param room_id: id of room which is going to be booked
-    :param booking_time: list with two elements [datetime_start, datetime_end]
-    :return: None
-    """
-    # Check if room available. Use room number and booking time (start, end).
-    [available, overlapping_bookings] = check_if_available(room_id, booking_time)
-    # if room is available then add booking and notify person by email and phone number
-    if available:
-        new_booking = booking_repo.add_room_booking(user_id, room_id, booking_time)
-        notify_user(user_id, new_booking)
-    # else if room is not available - show booking failed message. Show existing bookings: who booked + booking time
-    else:
-        print('Room is already booked. Choose another time.')
-        for booking in overlapping_bookings:
-            print_booking_info(booking)
-
-
 if __name__ == '__main__':
     database = 'example.db'
     prepare_db(database)
@@ -140,6 +94,6 @@ if __name__ == '__main__':
 
     print('Checking if room is available...')
 
-    book_room(user_id, room_number, [unix_booking_time_start, unix_booking_time_end])
+    booking_service.book_room(user_id, room_number, [unix_booking_time_start, unix_booking_time_end])
 
     flush_db(database)
