@@ -8,6 +8,7 @@ class BookingController:
         self.user_service = booking_service.user_service
         self.view = view
 
+    # TODO add data validation
     def book_room(self):
         """
         Orchestrates data flow from view to booking services and vice versa to book room.
