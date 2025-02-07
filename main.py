@@ -158,6 +158,18 @@ def from_unix(unix_timestamp):
     return {'date': dt.strftime("%d.%m.%Y"), 'time': dt.strftime("%H:%M")}
 
 
+def to_unix(date_str, time_str):
+    """
+    Converts date and time to unix timestamp.
+
+    :param date_str: Date string presented in DD.MM.YYYY format
+    :param time_str: Time string presented in HH:MM format
+    :return: unix timestamp (integer)
+    """
+    dt = datetime.strptime(f"{date_str} {time_str}", "%d.%m.%Y %H:%M")
+    return int(dt.timestamp())
+
+
 def print_booking_info(booking):
     """
     Prints booking info to the user.
