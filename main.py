@@ -10,9 +10,7 @@
 Результаты задачи должны быть размещены в вашей учетной записи Github, отправьте нам только ссылку.
 Мы не принимаем результаты задач в .zip/.rar и т. д.
 """
-import sqlite3
 
-from models.booking import Booking
 from repositories.booking_repository import BookingRepository
 from repositories.user_repository import UserRepository
 from utils.database_utils import prepare_db, flush_db
@@ -44,31 +42,6 @@ def check_if_available(room_id, booking_time):
         return [room_is_available, no_overlapping_bookings]
     else:
         return [room_is_not_available, overlapping_bookings]
-
-
-def add_room_booking(user_id, room_id, booking_time):
-    """
-    Adds room booking to the database.
-
-    :param user_id: id of user who is going to book
-    :param room_id: id of room which is going to be booked
-    :param booking_time: list with two elements [datetime_start, datetime_end]
-    :return: Booking object
-    """
-    [unix_booking_start_time, unix_booking_end_time] = booking_time
-    conn = sqlite3.connect(database)
-    cursor = conn.cursor()
-
-    add_booking_query = (f"INSERT INTO bookings (user_id, room_id, unix_datetime_start, unix_datetime_end) "
-                         f"VALUES ({user_id}, {room_id}, {unix_booking_start_time}, {unix_booking_end_time})")
-
-    cursor.execute(add_booking_query)
-    added_booking_id = cursor.lastrowid
-    booking_data = [added_booking_id, user_id, room_id, unix_booking_start_time, unix_booking_end_time]
-
-    conn.close()
-
-    return Booking(*booking_data)
 
 
 def send_booking_info_email(user_email, booking):
@@ -143,7 +116,7 @@ def book_room(user_id, room_id, booking_time):
     [available, overlapping_bookings] = check_if_available(room_id, booking_time)
     # if room is available then add booking and notify person by email and phone number
     if available:
-        new_booking = add_room_booking(user_id, room_id, booking_time)
+        new_booking = booking_repo.add_room_booking(user_id, room_id, booking_time)
         notify_user(user_id, new_booking)
     # else if room is not available - show booking failed message. Show existing bookings: who booked + booking time
     else:
