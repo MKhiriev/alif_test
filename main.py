@@ -45,6 +45,8 @@ if __name__ == '__main__':
     database = 'example.db'
     prepare_db(database)
 
-    booking_controller.book_room()
+    success = False
+    while not success:
+        success = booking_controller.book_room()
 
     flush_db(database)
