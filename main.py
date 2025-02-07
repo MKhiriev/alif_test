@@ -15,6 +15,7 @@ from datetime import datetime
 
 from database_utils import prepare_db, flush_db
 from models.booking import Booking
+from models.user import User
 
 
 # TODO move string 'example.db' from method to single place
@@ -107,10 +108,13 @@ def get_user_info(user_id):
     user_info_query = f"SELECT * FROM users WHERE user_id = {user_id}"
     cursor.execute(user_info_query)
 
-    found_user = cursor.fetchone()
+    found_user_info = cursor.fetchone()
     conn.close()
 
-    return found_user
+    if found_user_info:
+        return User(*found_user_info)
+    else:
+        return None
 
 
 def send_booking_info_email(user_email, booking):
@@ -145,9 +149,9 @@ def notify_user(user_id, booking):
     :param booking: Booking object
     :return: None
     """
-    user_info = get_user_info(user_id)
-    user_email = user_info['email']
-    user_telephone = user_info['telephone']
+    user = get_user_info(user_id)
+    user_email = user.email
+    user_telephone = user.telephone
 
     send_booking_info_email(user_email, booking)
     send_booking_info_sms(user_telephone, booking)
@@ -187,7 +191,7 @@ def print_booking_info(booking):
     """
     user_id = booking.user_id
     room_id = booking.room_id
-    user_name = get_user_info(user_id)['name']
+    user_name = get_user_info(user_id).name
     datetime_start = booking.unix_datetime_start
     datetime_end = booking.unix_datetime_end
     date = from_unix(datetime_start)['date']
@@ -227,13 +231,13 @@ if __name__ == '__main__':
     booking_date = input('Write desired date in given format [DD.MM.YYYY]: ')
     booking_time_start = input('Starting time in given format [HH:MM]: ')
     booking_time_end = input('Ending time in given format [HH:MM]: ')
-    user = input('Choose who is going to book room: ')
+    user_id = input('Choose who is going to book room: ')
 
     unix_booking_time_start = to_unix(booking_date, booking_time_start)
     unix_booking_time_end = to_unix(booking_date, booking_time_end)
 
     print('Checking if room is available...')
 
-    book_room(user, room_number, [unix_booking_time_start, unix_booking_time_end])
+    book_room(user_id, room_number, [unix_booking_time_start, unix_booking_time_end])
 
     flush_db(database)
