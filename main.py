@@ -11,34 +11,38 @@
 Мы не принимаем результаты задач в .zip/.rar и т. д.
 """
 
-""" System Objects and Their Properties """
-"""
-User is attached to Booking. Also Room is attached to Booking. Another Booking details are booking start time and booking end time.
-In relational DBs we attach other objects via their IDs.
-Booking:
-    - booking_id (INTEGER)
-    - user_id (INTEGER)
-    - room_id (INTEGER)
-    - start_time (depending on database DATETIME or INTEGER)
-    - end_time (depending on database DATETIME or INTEGER)
 
-User object has following info: user id, name, Email, Telephone number. 
-Telephone number is in Tajikistan's format (13 characters).
-User:
-    - user_id (INTEGER)
-    - name (depending on database TEXT of VARCHAR)
-    - email (depending on database TEXT of VARCHAR)
-    - telephone (depending on database TEXT of VARCHAR with size 13)
-    
-Room object only has a room number.
-Room:
-    - room_id (INTEGER)
-    - number (INTEGER)
-"""
-
-def book_room():
-    # Check if room available. Use room number and booking time (start, end).
-    # if room is available then add booking and notify person by email and phone number
-    # else if room is not available - show booking failed message. Failed message: who booked + booking time
+def check_if_available(room_id, booking_time):
     pass
 
+
+def add_room_booking(user_id, room_id, booking_time):
+    pass
+
+
+def notify_user(user_id, booking_info):
+    pass
+
+
+def print_booking_info(booking):
+    pass
+
+
+"""
+To book a room we need user, room and booking time.
+List of arguments: user_id, room_id, booking_time
+"""
+
+
+def book_room(user_id, room_id, booking_time):
+    # Check if room available. Use room number and booking time (start, end).
+    [available, overlapping_bookings] = check_if_available(room_id, booking_time)
+    # if room is available then add booking and notify person by email and phone number
+    if available:
+        booking_info = add_room_booking(user_id, room_id, booking_time)
+        notify_user(user_id, booking_info)
+    # else if room is not available - show booking failed message. Show existing bookings: who booked + booking time
+    else:
+        print('Room is already booked. Choose another time.')
+        for booking in overlapping_bookings:
+            print_booking_info(booking)
