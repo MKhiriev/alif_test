@@ -6,6 +6,11 @@ class User:
         self.telephone = telephone
 
     def get_contact_info(self):
+        """
+        Return contact information of the user
+
+        :return: tuple with telephone and email
+        """
         return {'telephone': self.telephone, 'email': self.email}
 
     def __str__(self):
