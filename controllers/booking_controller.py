@@ -37,9 +37,10 @@ class BookingController:
 
     def convert_bookings_to_human_readable_format(self, bookings):
         """
+        Converts all ids in Booking object to human-readable format.
 
-        :param bookings:
-        :return:
+        :param bookings: list of Booking objects
+        :return: list of Booking information strings
         """
         human_readable_bookings = []
         for booking in bookings:
