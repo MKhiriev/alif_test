@@ -10,11 +10,12 @@
 Результаты задачи должны быть размещены в вашей учетной записи Github, отправьте нам только ссылку.
 Мы не принимаем результаты задач в .zip/.rar и т. д.
 """
-
+from controllers.booking_controller import BookingController
 from repositories.booking_repository import BookingRepository
 from repositories.room_repository import RoomRepository
 from repositories.user_repository import UserRepository
 from services.booking_service import BookingService
+from services.room_service import RoomService
 from services.user_notification_service import UserNotificationService
 
 from services.user_service import UserService
@@ -32,19 +33,18 @@ sms_notifier = SmsNotifier('Babilon-M')
 email_notifier = EmailNotifier('Gmail.com')
 
 user_service = UserService(user_repo)
+room_service = RoomService(room_repo)
 notification_service = UserNotificationService(sms_notifier, email_notifier, user_service)
-booking_service = BookingService(booking_repo, notification_service)
+booking_service = BookingService(booking_repo, user_service, room_service, notification_service)
 
 view = ConsoleView()
+
+booking_controller = BookingController(booking_service, view)
 
 if __name__ == '__main__':
     database = 'example.db'
     prepare_db(database)
 
-    [user_id, room_id, unix_booking_time_start, unix_booking_time_end] = view.get_user_input()
-
-    print('Checking if room is available...')
-
-    booking_service.book_room(user_id, room_id, [unix_booking_time_start, unix_booking_time_end])
+    booking_controller.book_room()
 
     flush_db(database)
