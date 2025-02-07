@@ -11,6 +11,7 @@
 Мы не принимаем результаты задач в .zip/.rar и т. д.
 """
 import sqlite3
+from datetime import datetime
 
 
 def get_booking_info(room_id, booking_time):
@@ -21,7 +22,22 @@ def get_booking_info(room_id, booking_time):
     :param booking_time: list with two elements [datetime_start, datetime_end]
     :return: list of found bookings
     """
-    pass
+    conn = sqlite3.connect('example.db')
+    cursor = conn.cursor()
+
+    [unix_booking_start_time, unix_booking_end_time] = booking_time
+    find_booking_by_start_end_time_query = (f"SELECT * FROM bookings WHERE room_id = {room_id} AND "
+                                            f"("
+                                            f"({unix_booking_start_time} BETWEEN unix_datetime_start AND unix_datetime_end) "
+                                            f"OR ({unix_booking_end_time} BETWEEN unix_datetime_start AND unix_datetime_end) "
+                                            f"OR (unix_datetime_start BETWEEN {unix_booking_start_time} AND {unix_booking_end_time}) "
+                                            f"OR (unix_datetime_end BETWEEN {unix_booking_start_time} AND {unix_booking_end_time})"
+                                            f")")
+    cursor.execute(find_booking_by_start_end_time_query)
+    found_bookings_list = cursor.fetchall()
+    conn.close()
+
+    return found_bookings_list
 
 
 def check_if_available(room_id, booking_time):
@@ -77,7 +93,16 @@ def get_user_info(user_id):
     :param user_id: id of user who is going to book
     :return: list of user info [user_id, name, email, telephone]
     """
-    pass
+    conn = sqlite3.connect('example.db')
+    cursor = conn.cursor()
+
+    user_info_query = f"SELECT * FROM users WHERE user_id = {user_id}"
+    cursor.execute(user_info_query)
+
+    found_user = cursor.fetchone()
+    conn.close()
+
+    return found_user
 
 
 def send_booking_info_email(user_email, booking_info):
@@ -88,7 +113,8 @@ def send_booking_info_email(user_email, booking_info):
     :param booking_info: list of booking info [user_id, room_id, unix_datetime_start, unix_datetime_end]
     :return: None
     """
-    pass
+    print(f"Sending email to {user_email}..."
+          f"{booking_info}")
 
 
 def send_booking_info_sms(user_telephone, booking_info):
@@ -99,7 +125,8 @@ def send_booking_info_sms(user_telephone, booking_info):
     :param booking_info: list of booking info [user_id, room_id, unix_datetime_start, unix_datetime_end]
     :return: None
     """
-    pass
+    print(f"Sending sms to {user_telephone}..."
+          f"{booking_info}")
 
 
 def notify_user(user_id, booking_info):
@@ -118,14 +145,17 @@ def notify_user(user_id, booking_info):
     send_booking_info_sms(user_telephone, booking_info)
 
 
-def from_unix(unix_datetime):
+def from_unix(unix_timestamp):
     """
     Converts unix timestamp to datetime tuple.
+    Date is presented in DD.MM.YYYY format.
+    Time is presented in HH:MM format.
 
-    :param unix_datetime:
+    :param unix_timestamp: unix timestamp number (integer)
     :return: datetime tuple {'date': "%d.%m.%Y", 'time': "%H:%M"}
     """
-    pass
+    dt = datetime.fromtimestamp(unix_timestamp)
+    return {'date': dt.strftime("%d.%m.%Y"), 'time': dt.strftime("%H:%M")}
 
 
 def print_booking_info(booking):
