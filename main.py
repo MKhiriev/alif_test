@@ -21,7 +21,6 @@ database = 'example.db'
 user_repo = UserRepository(database)
 
 
-# TODO move string 'example.db' from method to single place
 def get_booking_info(room_id, booking_time):
     """
     SELECTs from Database room bookings based on room and given booking time range.
@@ -30,7 +29,7 @@ def get_booking_info(room_id, booking_time):
     :param booking_time: list with two elements [datetime_start, datetime_end]
     :return: list of found bookings
     """
-    conn = sqlite3.connect('example.db')
+    conn = sqlite3.connect(database)
     cursor = conn.cursor()
 
     [unix_booking_start_time, unix_booking_end_time] = booking_time
@@ -71,7 +70,6 @@ def check_if_available(room_id, booking_time):
         return [room_is_not_available, overlapping_bookings]
 
 
-# TODO move string 'example.db' from method to single place
 def add_room_booking(user_id, room_id, booking_time):
     """
     Adds room booking to the database.
@@ -82,7 +80,7 @@ def add_room_booking(user_id, room_id, booking_time):
     :return: Booking object
     """
     [unix_booking_start_time, unix_booking_end_time] = booking_time
-    conn = sqlite3.connect('example.db')
+    conn = sqlite3.connect(database)
     cursor = conn.cursor()
 
     add_booking_query = (f"INSERT INTO bookings (user_id, room_id, unix_datetime_start, unix_datetime_end) "
