@@ -14,8 +14,10 @@ import sqlite3
 from datetime import datetime
 
 from database_utils import prepare_db, flush_db
+from models.booking import Booking
 
 
+# TODO move string 'example.db' from method to single place
 def get_booking_info(room_id, booking_time):
     """
     SELECTs from Database room bookings based on room and given booking time range.
@@ -36,10 +38,10 @@ def get_booking_info(room_id, booking_time):
                                             f"OR (unix_datetime_end BETWEEN {unix_booking_start_time} AND {unix_booking_end_time})"
                                             f")")
     cursor.execute(find_booking_by_start_end_time_query)
-    found_bookings_list = cursor.fetchall()
+    found_bookings_data = cursor.fetchall()
     conn.close()
 
-    return found_bookings_list
+    return [Booking(*booking_data) for booking_data in found_bookings_data]
 
 
 def check_if_available(room_id, booking_time):
@@ -65,6 +67,7 @@ def check_if_available(room_id, booking_time):
         return [room_is_not_available, overlapping_bookings]
 
 
+# TODO move string 'example.db' from method to single place
 def add_room_booking(user_id, room_id, booking_time):
     """
     Adds room booking to the database.
@@ -72,7 +75,7 @@ def add_room_booking(user_id, room_id, booking_time):
     :param user_id: id of user who is going to book
     :param room_id: id of room which is going to be booked
     :param booking_time: list with two elements [datetime_start, datetime_end]
-    :return: booking id of added booking
+    :return: Booking object
     """
     [unix_booking_start_time, unix_booking_end_time] = booking_time
     conn = sqlite3.connect('example.db')
@@ -83,11 +86,14 @@ def add_room_booking(user_id, room_id, booking_time):
 
     cursor.execute(add_booking_query)
     added_booking_id = cursor.lastrowid
+    booking_data = [added_booking_id, user_id, room_id, unix_booking_start_time, unix_booking_end_time]
+
     conn.close()
 
-    return added_booking_id
+    return Booking(*booking_data)
 
 
+# TODO move string 'example.db' from method to single place
 def get_user_info(user_id):
     """
     Get user info.
@@ -107,44 +113,44 @@ def get_user_info(user_id):
     return found_user
 
 
-def send_booking_info_email(user_email, booking_info):
+def send_booking_info_email(user_email, booking):
     """
-    Sends email with created booking info.
+    Sends email with booking info.
 
     :param user_email: email address of user
-    :param booking_info: list of booking info [user_id, room_id, unix_datetime_start, unix_datetime_end]
+    :param booking: Booking object
     :return: None
     """
     print(f"Sending email to {user_email}..."
-          f"{booking_info}")
+          f"{booking}")
 
 
-def send_booking_info_sms(user_telephone, booking_info):
+def send_booking_info_sms(user_telephone, booking):
     """
     Sends sms with created booking info.
 
     :param user_telephone: telephone number of user
-    :param booking_info: list of booking info [user_id, room_id, unix_datetime_start, unix_datetime_end]
+    :param booking: Booking object
     :return: None
     """
     print(f"Sending sms to {user_telephone}..."
-          f"{booking_info}")
+          f"{booking}")
 
 
-def notify_user(user_id, booking_info):
+def notify_user(user_id, booking):
     """
     Notifies user with info about created booking.
 
     :param user_id: id of user who is going to book
-    :param booking_info: booking info which is going to be printed
+    :param booking: Booking object
     :return: None
     """
     user_info = get_user_info(user_id)
     user_email = user_info['email']
     user_telephone = user_info['telephone']
 
-    send_booking_info_email(user_email, booking_info)
-    send_booking_info_sms(user_telephone, booking_info)
+    send_booking_info_email(user_email, booking)
+    send_booking_info_sms(user_telephone, booking)
 
 
 def from_unix(unix_timestamp):
@@ -176,14 +182,14 @@ def print_booking_info(booking):
     """
     Prints booking info to the user.
 
-    :param booking: booking information which is going to be printed
+    :param booking: Booking object
     :return: None
     """
-    user_id = booking['user_id']
-    room_id = booking['room_id']
+    user_id = booking.user_id
+    room_id = booking.room_id
     user_name = get_user_info(user_id)['name']
-    datetime_start = booking['unix_datetime_start']
-    datetime_end = booking['unix_datetime_end']
+    datetime_start = booking.unix_datetime_start
+    datetime_end = booking.unix_datetime_end
     date = from_unix(datetime_start)['date']
     time_start = from_unix(datetime_start)['time']
     time_end = from_unix(datetime_end)['time']
@@ -204,8 +210,8 @@ def book_room(user_id, room_id, booking_time):
     [available, overlapping_bookings] = check_if_available(room_id, booking_time)
     # if room is available then add booking and notify person by email and phone number
     if available:
-        booking_info = add_room_booking(user_id, room_id, booking_time)
-        notify_user(user_id, booking_info)
+        new_booking = add_room_booking(user_id, room_id, booking_time)
+        notify_user(user_id, new_booking)
     # else if room is not available - show booking failed message. Show existing bookings: who booked + booking time
     else:
         print('Room is already booked. Choose another time.')
