@@ -13,6 +13,8 @@
 import sqlite3
 from datetime import datetime
 
+from database_utils import prepare_db, flush_db
+
 
 def get_booking_info(room_id, booking_time):
     """
@@ -77,7 +79,7 @@ def add_room_booking(user_id, room_id, booking_time):
     cursor = conn.cursor()
 
     add_booking_query = (f"INSERT INTO bookings (user_id, room_id, unix_datetime_start, unix_datetime_end) "
-                         f"VALUES ({user_id}, {room_id}, {unix_booking_start_time}, {unix_booking_end_time}) )")
+                         f"VALUES ({user_id}, {room_id}, {unix_booking_start_time}, {unix_booking_end_time})")
 
     cursor.execute(add_booking_query)
     added_booking_id = cursor.lastrowid
@@ -209,3 +211,23 @@ def book_room(user_id, room_id, booking_time):
         print('Room is already booked. Choose another time.')
         for booking in overlapping_bookings:
             print_booking_info(booking)
+
+
+if __name__ == '__main__':
+    database = 'example.db'
+    prepare_db(database)
+
+    room_number = input('Choose desired room number: ')
+    booking_date = input('Write desired date in given format [DD.MM.YYYY]: ')
+    booking_time_start = input('Starting time in given format [HH:MM]: ')
+    booking_time_end = input('Ending time in given format [HH:MM]: ')
+    user = input('Choose who is going to book room: ')
+
+    unix_booking_time_start = to_unix(booking_date, booking_time_start)
+    unix_booking_time_end = to_unix(booking_date, booking_time_end)
+
+    print('Checking if room is available...')
+
+    book_room(user, room_number, [unix_booking_time_start, unix_booking_time_end])
+
+    flush_db(database)
