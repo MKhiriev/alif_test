@@ -1,7 +1,9 @@
 class BookingService:
-    def __init__(self, booking_repository, user_notification_service):
+    def __init__(self, booking_repository, user_service, room_service, notification_service):
         self.booking_repository = booking_repository
-        self.user_notification_service = user_notification_service
+        self.user_service = user_service
+        self.room_service = room_service
+        self.user_notification_service = notification_service
 
     def book_room(self, user_id, room_id, booking_time):
         """
@@ -12,17 +14,17 @@ class BookingService:
         :param booking_time: list with two elements [datetime_start, datetime_end]
         :return: None
         """
-        # Check if room available. Use room number and booking time (start, end).
+        booking_success = True
+        booking_fail = False
+
         [available, overlapping_bookings] = self.check_if_available(room_id, booking_time)
-        # if room is available then add booking and notify person by email and phone number
         if available:
-            new_booking = self.booking_repository.add_room_booking(user_id, room_id, booking_time)
-            self.user_notification_service.notify_user(user_id, new_booking)
-        # else if room is not available - show booking failed message. Show existing bookings: who booked + booking time
-        else:
-            print('Room is already booked. Choose another time.')
-            for booking in overlapping_bookings:
-                print(booking)
+            registered_booking = self.booking_repository.add_room_booking(user_id, room_id, booking_time)
+            self.user_notification_service.notify_user(user_id, f"Created new booking. Details below: "
+                                                           f"{registered_booking}")
+            return [booking_success, registered_booking]
+        if not available:
+            return [booking_fail, overlapping_bookings]
 
     def check_if_available(self, room_id, booking_time):
         """
@@ -45,3 +47,23 @@ class BookingService:
             return [room_is_available, no_overlapping_bookings]
         else:
             return [room_is_not_available, overlapping_bookings]
+
+    def get_user_from_booking(self, booking):
+        """
+        Returns User from booking.
+
+        :param booking: Booking object
+        :return: User object
+        """
+        user_id = booking.user_id
+        return self.user_service.get_user_by_id(user_id)
+
+    def get_room_from_booking(self, booking):
+        """
+        Returns Room from booking.
+
+        :param booking: Booking object
+        :return: Room object
+        """
+        room_id = booking.room_id
+        return self.room_service.get_room_by_id(room_id)
