@@ -77,9 +77,11 @@ def flush_db(database):
     :return: None
     """
     conn = sqlite3.connect(database)
+    cursor = conn.cursor()
 
-    conn.execute("DROP TABLE IF EXISTS users")
-    conn.execute("DROP TABLE IF EXISTS rooms")
-    conn.execute("DROP TABLE IF EXISTS bookings")
+    cursor.execute("DROP TABLE IF EXISTS users")
+    cursor.execute("DROP TABLE IF EXISTS rooms")
+    cursor.execute("DROP TABLE IF EXISTS bookings")
 
+    conn.commit()
     conn.close()
