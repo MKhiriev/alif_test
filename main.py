@@ -13,9 +13,12 @@
 import sqlite3
 
 from models.booking import Booking
-from models.user import User
+from repositories.user_repository import UserRepository
 from utils.database_utils import prepare_db, flush_db
 from utils.datetime_utils import to_unix, from_unix
+
+database = 'example.db'
+user_repo = UserRepository(database)
 
 
 # TODO move string 'example.db' from method to single place
@@ -94,29 +97,6 @@ def add_room_booking(user_id, room_id, booking_time):
     return Booking(*booking_data)
 
 
-# TODO move string 'example.db' from method to single place
-def get_user_info(user_id):
-    """
-    Get user info.
-
-    :param user_id: id of user who is going to book
-    :return: list of user info [user_id, name, email, telephone]
-    """
-    conn = sqlite3.connect('example.db')
-    cursor = conn.cursor()
-
-    user_info_query = f"SELECT * FROM users WHERE user_id = {user_id}"
-    cursor.execute(user_info_query)
-
-    found_user_info = cursor.fetchone()
-    conn.close()
-
-    if found_user_info:
-        return User(*found_user_info)
-    else:
-        return None
-
-
 def send_booking_info_email(user_email, booking):
     """
     Sends email with booking info.
@@ -149,7 +129,7 @@ def notify_user(user_id, booking):
     :param booking: Booking object
     :return: None
     """
-    user = get_user_info(user_id)
+    user = user_repo.get_user_by_id(user_id)
     user_email = user.email
     user_telephone = user.telephone
 
@@ -166,7 +146,7 @@ def print_booking_info(booking):
     """
     user_id = booking.user_id
     room_id = booking.room_id
-    user_name = get_user_info(user_id).name
+    user_name = user_repo.get_user_by_id(user_id).name
     datetime_start = booking.unix_datetime_start
     datetime_end = booking.unix_datetime_end
     date = from_unix(datetime_start)['date']
